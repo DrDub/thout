@@ -63,10 +63,11 @@ Protocol
 
 The communication between the CLIENT and NODE:
 
-* Client: FETCH(hash)
-* Client: REGISTER(hash)
-* Client: AVAILABLE(number_of_slots)
-* Node: PUSH(document)
+* Client: JSON { 'command' : 'FETCH' , 'hash' : hash }
+* Client: JSON { 'command' : 'REGISTER', 'hash' : hash }
+* Client: JSON { 'command' : 'AVAILABLE' 'number_of_slots' : number }
+* Client: binary data (document)
+* Node: binary data (document)
 
 Communication within NODE and CACHE:
 
@@ -75,6 +76,15 @@ Communication within NODE and CACHE:
 * invalidate(connection_id, hash)
 * validate(connection_id, hash)
 * heartbeat()
+
+Dependencies
+------------
+
+
+Node dependencies (NPM):
+
+* node-static
+* websocket
 
 Related technology
 ------------------
