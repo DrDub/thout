@@ -76,6 +76,7 @@ Communication within NODE and CACHE:
 * invalidate(connection_id, hash)
 * validate(connection_id, hash)
 * heartbeat()
+* list(number_of_hashes): list[hash]
 
 Dependencies
 ------------
