@@ -6,6 +6,42 @@ leaks-oriented sites.
 
 A leaks site that only exists within every reader's Web broswer.
 
+Technical details
+-----------------
+
+Three components:
+
+* Regular site client JS (CLIENT)
+* Chrome Extension (CHROME)
+* NodeJS server (NODE)
+
+When CLIENT access NODE, NODE will check whether CLIENT is coming from
+a tor exit node, if not will explain the user the need to use tor and
+offer a link to download the tor bundle.
+
+For tor-shielded CLIENTs, the default landing page will contain a list
+of the currently-known to the NODE hashes, plus the number of active
+connection. The CLIENT will also immediately start downloading
+documents through the NODE as the NODE sees fit.
+
+When the CLIENT access a hash, the NODE checks whether it knows an
+active connection with that hash. Otherwise it will exhaustively ask
+all other connections for the hash, starting with the CHROME clients.
+
+When CLIENT is asked for a document via a hash, it will check whether
+the hash is stored and return it, otherwise it will indicate it
+doesn't has the document.
+
+CHROME operates similarly to CLIENT but in the background and stores a
+much larger number of documents.
+
+NODE is expected to run completely in RAM without storing no logs of
+any type. It keeps in RAM a sparse matrix of hashes vs. connections,
+distributing documents to connections to enforce a minimum number of
+replicated documents.
+
+The documents are replicated fully and have a maximum size. The only
+crypto code involved is computing full document hashes.
 
 Related technology
 ------------------
