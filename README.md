@@ -68,6 +68,13 @@ The communication between the CLIENT and NODE:
 * Client: AVAILABLE(number_of_slots)
 * Node: PUSH(document)
 
+Communication within NODE and CACHE:
+
+* find_by_hash(hash): list[connection_id]
+* invalidate(connection_id)
+* invalidate(connection_id, hash)
+* validate(connection_id, hash)
+* heartbeat()
 
 Related technology
 ------------------
