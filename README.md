@@ -55,6 +55,20 @@ replicated documents.
 The documents are replicated fully and have a maximum size. The only
 crypto code involved is computing full document hashes.
 
+Within NODE, there is a CACHE component that mantains the table with a
+TTL.
+
+Protocol
+--------
+
+The communication between the CLIENT and NODE:
+
+* Client: FETCH(hash)
+* Client: REGISTER(hash)
+* Client: AVAILABLE(number_of_slots)
+* Node: PUSH(document)
+
+
 Related technology
 ------------------
 
