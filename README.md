@@ -6,6 +6,18 @@ leaks-oriented sites.
 
 A leaks site that only exists within every reader's Web broswer.
 
+
+Advantages
+----------
+
+* Server hosts no data.
+* Single point of failure (server) can be replaced quickly.
+* If the server rejects data, the server can be moved someplace else
+* Documents that are not being accessed are 'forgotten'
+* People wanting to donate bandwidth and disk space can run a Chrome
+  extension.
+
+
 Technical details
 -----------------
 
@@ -46,10 +58,10 @@ crypto code involved is computing full document hashes.
 Related technology
 ------------------
 
-FreeNet: https://freenetproject.org/ 
-Tor: https://www.torproject.org/ 
-Tor Flash Proxy: https://crypto.stanford.edu/flashproxy/ 
-
+* FreeNet: https://freenetproject.org/ 
+* Tor: https://www.torproject.org/ 
+* Tor Flash Proxy: https://crypto.stanford.edu/flashproxy/ 
+* Persevere: http://code.google.com/p/persevere-framework/
 
 About the name
 --------------
