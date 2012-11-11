@@ -60,6 +60,7 @@ crypto code involved is computing full document hashes.
 Indexing and browsing documents is expected to be done on a different
 site and are outside of this project.
 
+
 Protocol
 --------
 
@@ -84,6 +85,7 @@ Related technology
 * Tor: https://www.torproject.org/ 
 * Tor Flash Proxy: https://crypto.stanford.edu/flashproxy/ 
 * Persevere: http://code.google.com/p/persevere-framework/
+
 
 About the name
 --------------
