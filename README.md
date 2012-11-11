@@ -24,7 +24,6 @@ Technical details
 Three components:
 
 * Regular site client JS (CLIENT)
-* Chrome Extension (CHROME)
 * NodeJS server (NODE)
 
 When CLIENT access NODE, NODE will check whether CLIENT is coming from
@@ -44,8 +43,11 @@ When CLIENT is asked for a document via a hash, it will check whether
 the hash is stored and return it, otherwise it will indicate it
 doesn't has the document.
 
-CHROME operates similarly to CLIENT but in the background and stores a
-much larger number of documents.
+Extended CLIENTs could use a Chrome Extension (CHROME) or a full
+fledged node.js program that stores all known documents and even
+connects multiple servers together (GATEWAY). For example, CHROME
+could operate in the background and stores a much larger number of
+documents.
 
 NODE is expected to run completely in RAM without storing no logs of
 any type. It keeps in RAM a sparse matrix of hashes vs. connections,
@@ -55,36 +57,25 @@ replicated documents.
 The documents are replicated fully and have a maximum size. The only
 crypto code involved is computing full document hashes.
 
-Within NODE, there is a CACHE component that mantains the table with a
-TTL.
+Indexing and browsing documents is expected to be done on a different
+site and are outside of this project.
 
 Protocol
 --------
 
 The communication between the CLIENT and NODE:
 
-* Client: JSON { 'command' : 'FETCH' , 'hash' : hash }
-* Client: JSON { 'command' : 'REGISTER', 'hash' : hash }
-* Client: JSON { 'command' : 'AVAILABLE' 'number_of_slots' : number }
-* Client: binary data (document)
-* Node: binary data (document)
+* From Client: JSON { 'command' : 'FETCH' , 'hash' : hash }
+* From Client: JSON { 'command' : 'REGISTER', 'hash' : hash }
+* From Client: JSON { 'command' : 'AVAILABLE', 'number_of_slots' : number }
+* From Client: JSON { 'command' : 'LIST', 'number_of_hashes' : number }
+* From Client: JSON { 'response' : 'UNAVAILABLE', 'hash' : hash }
+* From Client: binary data (document)
+* From Node: JSON { 'command' : 'FETCH', 'hash' : hash }
+* From Node: JSON { 'response' : 'UNAVAILABLE', 'hash' : hash }
+* From Node: JSON { 'response' : 'LIST', 'hash' : [ hash ] } 
+* From Node: binary data (document)
 
-Communication within NODE and CACHE:
-
-* find_by_hash(hash): list[connection_id]
-* invalidate(connection_id)
-* invalidate(connection_id, hash)
-* validate(connection_id, hash)
-* heartbeat()
-
-Dependencies
-------------
-
-
-Node dependencies (NPM):
-
-* node-static
-* websocket
 
 Related technology
 ------------------
