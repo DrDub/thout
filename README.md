@@ -21,7 +21,7 @@ Advantages
 Technical details
 -----------------
 
-Three components:
+Two components:
 
 * Regular site client JS (CLIENT)
 * NodeJS server (NODE)
@@ -61,8 +61,7 @@ Indexing and browsing documents is expected to be done on a different
 site and are outside of this project.
 
 
-Protocol
---------
+### Protocol
 
 The communication between the CLIENT and NODE:
 
@@ -93,4 +92,5 @@ About the name
 Thout is an alternative spelling for the Egyptian god 'Thoth', which,
 among many other things, "served as a mediating power, especially
 between good and evil, making sure neither had a decisive victory over
-the other" (according to Wikipedia).
+the other" (according to Wikipedia). Thanks to Maxime Martineau for
+suggesting the name.
