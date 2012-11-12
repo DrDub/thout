@@ -1,5 +1,5 @@
-node.js Server for Distributed Document Storage using WebSocket IO
-==================================================================
+node.js Server for Distributed Document Storage using WebSockets
+================================================================
 
 This node.js server has three components:
 
@@ -53,13 +53,14 @@ DOCFETCHER
 CONMGR
 ------
 
-* register_component(component)
-  * add component to registered_components
+* register_listener(listener)
+  * add component to listeners
 * new_connection(connection): connection_id
   * add connection and generate an id for it
-  * send event new_connection(connection_id) to registered_components
+  * send event new_connection(connection_id) to listeners
 * disconnect(connection)
-  * send event disconnect(connection_id) to registered_components
+  * send event disconnect(connection_id) to listeners
+* send(connection_id, data)
 * list(): list[connection_id]
 
 Events

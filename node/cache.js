@@ -7,29 +7,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var websocket = require('websocket'), 
-http = require('http'),
-static = require('node-static');
+function Cache(){}
 
-function start(external_ip, conmgr) {
-    var client_files = new(static.Server)('../client');
-    var server = http.createServer(function(request, response) {
-	request.addListener('end', function () {
-            // Serve files
-            client_files.serve(request, response);
-	});
-    });
-
-    var wsServer = new (websocket.server)({
-	httpServer: server
-    });
-
-    wsServer.on('request', function(request) {
-	var connection = request.accept(null, request.origin);
-	conmgr.new_connection(connection);
-    });
-
-    server.listen(8080, external_ip);
-}
-
-exports.start = start;
+module.exports = Cache;

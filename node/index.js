@@ -7,29 +7,33 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var websocket = require('websocket'), 
-http = require('http'),
-static = require('node-static');
 
-function start(external_ip, conmgr) {
-    var client_files = new(static.Server)('../client');
-    var server = http.createServer(function(request, response) {
-	request.addListener('end', function () {
-            // Serve files
-            client_files.serve(request, response);
-	});
-    });
 
-    var wsServer = new (websocket.server)({
-	httpServer: server
-    });
+var fs = require("fs"),
+server = require("./server"),
+Controller = require("./controller"),
+Cache = require("./cache"),
+ConMgr = require("./conmgr"),
+DocFetcher = require("./docfetcher"),
+TorChecker = require("./torchecker");
 
-    wsServer.on('request', function(request) {
-	var connection = request.accept(null, request.origin);
-	conmgr.new_connection(connection);
-    });
+// read config file
 
-    server.listen(8080, external_ip);
-}
 
-exports.start = start;
+var config_data = fs.readFileSync('./config.json');
+var config = JSON.parse(config_data); // might fail
+
+console.assert(config.EXTERNAL_IP);
+console.assert(config.MAX_DOC_SIZE);
+console.assert(config.MAX_MEM);
+
+var cache = new Cache(config.MAX_MEM);
+var docfetcher = new DocFetcher(config.MAX_DOC_SIZE);
+var torchecker = new TorChecker(config.EXTERNAL_IP);
+var controller = new Controller(cache, docfetcher);
+var conmgr = new ConMgr(controller);
+conmgr.add_listener(cache);
+conmgr.add_listener(docfetcher);
+DocFetcher.conmgr = conmgr;
+
+server.start(config.EXTERNAL_IP, conmgr);
