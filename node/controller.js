@@ -34,21 +34,45 @@ function message(connection_id, message){
 	var json;
 	try{
 	    json = JSON.parse(message.utf8Data);
-	    
 	}catch(err){
 	    return console.error(err);
 	}
-	//TODO analyze JSON object and execute:
-/*
-* Client with given connection_id sends 'fetch' hash command: 
-  * DOCFETCHER->fetch(hash, connection_id)
-* Client with given connection_id sends 'register' hash command:
-  * CACHE->validate(connection_id, hash)
-* Client with given connection_id sends 'available' number_of_slots command:
-  * CACHE->capacity(connection_id, number_of_slots)
-*/
+	// analyze JSON object and execute
+	if('command' in json){
+	    if(json.command === 'FETCH') {
+		if(!('hash' in json))
+		    return console.error('FETCH without hash: '+message.utf8Data);
+		docfetcher.fetch(json.hash, connection_id);
+	    }else if(json.command === 'REGISTER') {
+		if(!('hash' in json))
+		    return console.error('REGISTER without hash: '+message.utf8Data);
+		cache.validate(connection_id, json.hash)
+	    }else if(json.command === 'AVAILABLE') {
+		if(!('number_of_slots' in json))
+		    return console.error('AVAILABLE without number_of_slots: '+message.utf8Data);
+		cache.capacity(connection_id, json.number_of_slots);
+	    }else if(json.command === 'LIST') {
+		if(!('number_of_hashes' in json))
+		    return console.error('LIST without number_of_hashes: '+message.utf8Data);
+		var message = JSON.stringify({ 'response' : 'LIST', 'hashes': cache.list(json.number_of_hashes) });
+		process.nextTick(function(){
+		    conmgr.send(connection_id, message);
+		});
+	    }else{
+		return console.error('Unknown command ' + json.command);
+	    }
+	}else if('response' in json){
+	    if(json.response === 'UNAVAILABLE'){
+		if(!('hash' in json))
+		    return console.error('UNAVAILABLE without hash: '+message.utf8Data);
+		cache.invalidate(connection_id, hash);
+		docfetcher.not_found(connection_id, hash);
+	    }else{
+		return console.error('Unknown response ' + json.response);
+	    }
+	}
     }else{
-	console.error("Unknown message type: '" + message.type + "'");
+	return console.error("Unknown message type: '" + message.type + "'");
     }
 }
 	

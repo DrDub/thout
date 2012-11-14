@@ -9,6 +9,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 function DocFetcher(max_doc_size){
     this.docs_being_fetched = {};
+    // need to add a time to docs_being_fetched
     this.max_doc_size = max_doc_size;
     this.cache = undefined;
     this.conmgr = undefined;
@@ -79,6 +80,12 @@ function new_connection(connection_id){
     this.docs_being_fetched.forEach(function(obj){
 	obj.providers.push(connection_id);
     });
+}
+
+function not_found(connection_id, hash){
+    //TODO remove connection_id from docs_being_fetched[hash] then move to next one and send fetch command
+    //TODO if list is empty, send UNAVAILABLE response
+
 }
 
 function heartbeat(){

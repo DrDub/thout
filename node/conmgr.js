@@ -32,9 +32,7 @@ function new_connection(connection){
 	listener.new_connection(id);
     }
     connection.on('message', function(message) {
-	if (message.type === 'utf8') {
-	    this.controller.message(id, message.data);
-	}
+	this.controller.message(id, message.data);
     });
 	
     connection.on('close', function(connection) {

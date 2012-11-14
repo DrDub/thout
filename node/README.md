@@ -41,6 +41,9 @@ DOCFETCHER
   * remove connection_id from all docs_being_fetched
     * if connection_id was top of list for anyone, send 'fetch' command to next
     * if list is empty, send UNAVAILABLE response
+* not_found(connection_id, hash)
+  * remove connection_id from docs_being_fetched[hash] then move to next one and send fetch command
+  * if list is empty, send UNAVAILABLE response
 * received(hash, document)
   * send document to all docs_being_fetched[hash]
   * delete docs_being_fetched[hash]
@@ -72,6 +75,9 @@ Events
   * CACHE->validate(connection_id, hash)
 * Client with given connection_id sends 'available' number_of_slots command:
   * CACHE->capacity(connection_id, number_of_slots)
+* Client with given connection_id sends 'unavailable' hash response:
+  * CACHE->invalidate(connection_id, hash)
+  * DOCFETCHER->not_found(connection_id, hash)
 * Node sends document to client
   * Always succeeds, if the document is correctly received the client will issue a register
 * Node issues a heartbeat to CACHE, DOCFETCHER

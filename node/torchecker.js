@@ -18,6 +18,11 @@ function refresh(){
     //TODO
 }
 
+function check(request){
+    //TODO
+    return false;
+}
+
 TorChecker.prototype.refresh = refresh;
 
 module.exports = TorChecker;
