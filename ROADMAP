@@ -1,0 +1,102 @@
+ROADMAP
+=======
+
+
+Stage 1
+
+* Basic server
+
+  * Server asks for a document from all connections, one connection at
+    a time, with timeout.
+  * Server assumes enough resources to keep track of all hashes and
+    connections.
+  * Customizable hash function.
+  * Maximum document size.
+
+* Basic client
+
+  * Handles text/plain, text/html.
+  * Documents are <HTTP-linke header, '\n', binary document>.
+  * No hash blacklisting.
+  * No disk storage.
+
+
+Stage 2
+
+* Extend server with:
+
+  * Ask for documents on multiple connections simultaneously (e.g.,
+    three connections at the same time).
+  * Do not ask for documents exhaustively to all connections.
+  * Drop hashes and connections to conform to a given resource
+    consumption level.
+
+* Extend the basic client with:
+
+  * Console showing received and stored documents.
+  * Handles thout://hash_function/hash URIs.
+  * Hash blacklisting, meaning certain documents known to the user can
+    be explicitly refused to be stored.
+  * Pluggable handling of MIME types.
+
+* (New) Node.js client
+
+  * Serves documents from a particular folder. It is intended to work
+    together with a regular HTTP server folder.
+
+    * This process is quite complex, as internal URIs need to be
+      changed to thout://hash_function/hash URIs.
+
+      For example: 
+      * Page index -links-to-> pages A, B, C
+      * Page A -links-to-> pages B, D
+      * Page B -links-to-> page C, A, index
+      * Page C -links-to-> page D, index
+      * Page D -links-to-> index
+
+      The graph needs to be made into a tree, by dropping some nodes:
+      * Page index -links-to-> pages A, B, C
+      * Page A -links-to-> pages B, D
+      * Page B -links-to-> page C
+      * Page C -links-to-> page D
+      * Page D
+
+      Then topologically sorted: {D, C, B, A, index} and hashed in
+      order with the links changed to thout://hash_function/hash
+      links.
+      
+  * Also caches in memory a number of documents for the thout network.
+
+
+Stage 3
+
+* Extend server with:
+
+  * Capability to become a gateway, connecting to another server.
+  * Needs to be able to detect search cycles and break them.
+
+* Extend client with:
+
+  * Capability to connect to multiple thout servers, bridging between
+    them.
+
+* Extend Node.js client with:
+
+  * Capability to serve documents to multiple thout's servers,
+    bridging between them.
+  
+
+Stage 4
+
+* Freenet add-on:
+
+  * Bridges between freenet and thout.
+  * Each freenet node is then potentially a thout node.
+
+
+Stage 5
+
+(When node.js handles asynchronous crypto.hash with buffers)
+
+* Add to client and server the possibility to stream video.
+
