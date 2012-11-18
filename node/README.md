@@ -101,3 +101,4 @@ Node dependencies (NPM):
 
 * node-static
 * websocket
+* torchecker

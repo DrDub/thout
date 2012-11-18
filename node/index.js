@@ -10,12 +10,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 var fs = require("fs"),
+torchecker = require("torchecker"),
 server = require("./server"),
 Controller = require("./controller"),
 Cache = require("./cache"),
 ConMgr = require("./conmgr"),
-DocFetcher = require("./docfetcher"),
-TorChecker = require("./torchecker");
+DocFetcher = require("./docfetcher");
 
 // read config file
 
@@ -29,11 +29,11 @@ console.assert(config.MAX_MEM);
 
 var cache = new Cache(config.MAX_MEM);
 var docfetcher = new DocFetcher(config.MAX_DOC_SIZE);
-var torchecker = new TorChecker(config.EXTERNAL_IP);
+torchecker.start(config.EXTERNAL_IP);
 var controller = new Controller(cache, docfetcher);
 var conmgr = new ConMgr(controller);
 conmgr.add_listener(cache);
 conmgr.add_listener(docfetcher);
 DocFetcher.conmgr = conmgr;
 
-server.start(config.EXTERNAL_IP, conmgr);
+server.start(config.EXTERNAL_IP, conmgr, torchecker);
