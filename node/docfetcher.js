@@ -83,8 +83,28 @@ function new_connection(connection_id){
 }
 
 function not_found(connection_id, hash){
-    //TODO remove connection_id from docs_being_fetched[hash] then move to next one and send fetch command
-    //TODO if list is empty, send UNAVAILABLE response
+    //remove connection_id from docs_being_fetched[hash]
+    var next_connection_id = this.docs_being_fetched[hash].providers[1];
+    if(-1 != this.docs_being_fetched[hash].providers.indexOf(connection_id))
+        var position = this.docs_being_fetched[hash].providers.indexOf(connection_id);
+    else
+    	return -1;
+    this.docs_being_fetched[hash].providers.splice(position, 1);
+    //then move to next one and send fetch command via JSON.stringify
+    this.docs_being_fetched[hash].contacted = new Date();
+    process.nextTick(function(){
+	this.conmgr.send(next_connection_id, 
+			 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
+    }
+    //if list is empty, send UNAVAILABLE response to every con_id in awaiting
+    if (this.docs_being_fetched[hash].providers.length < 1)
+    this.docs_being_fetched[hash].awaiting.forEach(function(con_id){
+	process.nextTick(function(){
+	    this.conmgr.send(con_id,
+			     JSON.stringify({ 'response' : 'UNAVAILABLE', 'hash' : hash }));
+	}
+    //and then remove the hash from docs_being_fetched
+    delete this.docs_being_fetched[hash]
 
 }
 
