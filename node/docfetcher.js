@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2012 Pablo Duboue
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -9,7 +10,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 function DocFetcher(max_doc_size){
     this.docs_being_fetched = {};
-    // need to add a time to docs_being_fetched
+    // need to migrate timeout to config file
+    // what is a sane value?
+    this.timeout = undefined;
     this.max_doc_size = max_doc_size;
     this.cache = undefined;
     this.conmgr = undefined;
@@ -98,19 +101,41 @@ function not_found(connection_id, hash){
     }
     //if list is empty, send UNAVAILABLE response to every con_id in awaiting
     if (this.docs_being_fetched[hash].providers.length < 1)
-    this.docs_being_fetched[hash].awaiting.forEach(function(con_id){
-	process.nextTick(function(){
-	    this.conmgr.send(con_id,
-			     JSON.stringify({ 'response' : 'UNAVAILABLE', 'hash' : hash }));
+        this.docs_being_fetched[hash].awaiting.forEach(function(con_id){
+	    process.nextTick(function(){
+	        this.conmgr.send(con_id,
+		                 JSON.stringify({ 'response' : 'UNAVAILABLE', 'hash' : hash }));
+            }
 	}
     //and then remove the hash from docs_being_fetched
     delete this.docs_being_fetched[hash]
-
 }
 
-function heartbeat(){
-    //TODO if a doc has waited long enough for a given connection_id, move to next
-    //TODO if list is empty, send UNAVAILABLE response
+function heartbeat(hash){
+    //When a doc has waited long enough for a given connection_id,
+    var now = new Date();
+    if (this.timeout > now - this.docs_being_fetched[hash].contacted){
+        //if provider list is empty send UNAVAILABLE response,
+        if (this.docs_being_fetched[hash].providers.length < 1)
+            this.docs_being_fetched[hash].awaiting.forEach(function(con_id){
+	        process.nextTick(function(){
+	            this.conmgr.send(con_id,
+		                     JSON.stringify({ 'response' : 'UNAVAILABLE', 'hash' : hash }));
+                }
+	}
+        else{
+            //otherwise splice that connection_id,
+            this.docs_being_fetched[hash].providers.splice(0,1);
+            //get the next_connection_id
+            var next_connection_id = this.docs_being_fetched[hash].providers[0];
+            //and initiate a new fetch.
+            this.docs_being_fetched[hash].contacted = new Date();
+            process.nextTick(function(){
+                this.conmgr.send(next_connection_id, 
+		                 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
+            }
+        }
+    }
 }
 
 DocFetcher.prototype.fetch = fetch;
