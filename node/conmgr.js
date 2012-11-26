@@ -1,10 +1,24 @@
-/* Copyright (c) 2012 Pablo Duboue
+/* 
+Copyright (c) 2012 Pablo Duboue
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
 */
 
 function ConMgr(controller){
@@ -17,30 +31,30 @@ function ConMgr(controller){
 function new_connection(connection){
     var id = this.last_id;
     if(this.last_id === 9007199254740992){
-	console.error("Connection counter looping");
-	for(id=0; id<this.connections.length; id++){
-	    if(this.connections[id] === undefined){
-		break;
-	    }
-	}
+        console.error("Connection counter looping");
+        for(id=0; id<this.connections.length; id++){
+            if(this.connections[id] === undefined){
+                break;
+            }
+        }
     }else{
-	this.last_id++;
+        this.last_id++;
     }
 
     this.connections[id] = connection;
     for(listener in listeners){
-	listener.new_connection(id);
+        listener.new_connection(id);
     }
     connection.on('message', function(message) {
-	this.controller.message(id, message.data);
+        this.controller.message(id, message.data);
     });
-	
+        
     connection.on('close', function(connection) {
-	// close connection
-	delete this.connections[id];
-	for(listener in listeners){
-	    listener.disconnect(id);
-	}
+        // close connection
+        delete this.connections[id];
+        for(listener in listeners){
+            listener.disconnect(id);
+        }
     });
     return id;
 }
@@ -51,7 +65,7 @@ function add_listener(listener){
 
 function send(connection_id, message){
     if(this.connections[connection_id] === undefined){
-	return console.error("Trying to send on a drop connection");
+        return console.error("Trying to send on a drop connection");
     }
     this.connections[connection_id].send(message);
 }
@@ -59,7 +73,7 @@ function send(connection_id, message){
 function list(){
     var results=[];
     for(id in this.connections)
-	results.append(id);
+        results.append(id);
     return results;
 }
 

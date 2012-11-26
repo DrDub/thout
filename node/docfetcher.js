@@ -33,13 +33,13 @@ function DocFetcher(max_doc_size, fetch_timeout_in_sec){
 // the given hash
 function fetch(hash, awaiting){
     if(!Array.isArray(awaiting)){
-	awaiting = [awaiting];
+        awaiting = [awaiting];
     }
     if(hash in this.docs_being_fetched){
-	// already being fetched
-	var this_awaiting = this.docs_being_fetched[hash].awaiting;
-	this_awaiting.push.apply(this_awaiting, awaiting);
-	return;
+        // already being fetched
+        var this_awaiting = this.docs_being_fetched[hash].awaiting;
+        this_awaiting.push.apply(this_awaiting, awaiting);
+        return;
     }
     // create a new entry in docs_being_fetched
     var providers = [];
@@ -47,12 +47,12 @@ function fetch(hash, awaiting){
     var all = conmgr.list();
     providers.push.apply(providers, known);
     for(idx in all)
-	if(!(all[idx] in known))
-	    providers.push(all[idx]);
+        if(!(all[idx] in known))
+            providers.push(all[idx]);
 
     this.docs_being_fetched[hash] = 
-	{ providers: providers,
-	  awaiting: awaiting };
+        { providers: providers,
+          awaiting: awaiting };
     this.fetch_top(hash);
 }
 
@@ -60,56 +60,56 @@ function fetch(hash, awaiting){
 function fetch_top(hash){
     //if list is empty, send UNAVAILABLE response to every con_id in awaiting
     if (this.docs_being_fetched[hash].providers.length < 1)
-	return unavailable(hash);
+        return unavailable(hash);
 
     this.docs_being_fetched[hash].contacted = -1; // being contacted
     process.nextTick(function(){
-	this.docs_being_fetched[hash].contacted = new Date();
-	this.conmgr.send(providers[0], 
-			 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
+        this.docs_being_fetched[hash].contacted = new Date();
+        this.conmgr.send(providers[0], 
+                         JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
     });
 }
 
 // tell the connections in awaiting the document is unavailable
 function unavailable(hash){
     this.docs_being_fetched[hash].awaiting.forEach(function(other_id){
-	process.nextTick(function(){
-	    this.conmgr.send(other_id,
-			     JSON.stringify({ 'response' : 'UNAVAILABLE', 
-					      'hash' : hash }));
-	});
+        process.nextTick(function(){
+            this.conmgr.send(other_id,
+                             JSON.stringify({ 'response' : 'UNAVAILABLE', 
+                                              'hash' : hash }));
+        });
     });
     delete this.docs_being_fetched[hash];
 }
-	
+        
 // a connection have disconnected, delete it from providers and
 // awaiting. If needed fetch from next or unavailable if last
 function disconnect(connection_id){
     for(hash in this.docs_being_fetched){
-	var pos = this.docs_being_fetched[hash].providers.indexOf(connection_id);
-	if(pos >= 0)
-	    this.docs_being_fetched[hash].providers.splice(pos, 1);
-	var pos2 = this.docs_being_fetched[hash].awaiting.indexOf(connection_id);
-	if(pos2 >= 0)
-	    this.docs_being_fetched[hash].awaiting.splice(pos2, 1);
-	if(pos == 0){
-	    if(this.docs_being_fetched[hash].length == 0){
-		this.unavailable(hash);
-	    }else{
-		fetch_top(hash);
-	    }
-	}
+        var pos = this.docs_being_fetched[hash].providers.indexOf(connection_id);
+        if(pos >= 0)
+            this.docs_being_fetched[hash].providers.splice(pos, 1);
+        var pos2 = this.docs_being_fetched[hash].awaiting.indexOf(connection_id);
+        if(pos2 >= 0)
+            this.docs_being_fetched[hash].awaiting.splice(pos2, 1);
+        if(pos == 0){
+            if(this.docs_being_fetched[hash].length == 0){
+                this.unavailable(hash);
+            }else{
+                fetch_top(hash);
+            }
+        }
     }
 }
 
 // document received, broadcast to awaiting
 function received(hash, document){
     if(!(hash in this.docs_being_fetched))
-	return console.error("Received '"+ hash + "', not being awaited for.");
+        return console.error("Received '"+ hash + "', not being awaited for.");
     this.docs_being_fetched[hash].awaiting.forEach(function(connection_id){
-	process.nextTick(function(){
-	    this.conmgr.send(connection_id, document);
-	});
+        process.nextTick(function(){
+            this.conmgr.send(connection_id, document);
+        });
     });
     delete this.docs_being_fetched[hash];
 }
@@ -117,7 +117,7 @@ function received(hash, document){
 // new connection, add to providers
 function new_connection(connection_id){
     this.docs_being_fetched.forEach(function(obj){
-	obj.providers.push(connection_id);
+        obj.providers.push(connection_id);
     });
 }
 
@@ -126,13 +126,13 @@ function not_found(connection_id, hash){
     //remove connection_id from docs_being_fetched[hash]
     var pos = this.docs_being_fetched[hash].providers.indexOf(connection_id);
     if(pos == -1)
-	// not there, bail out
-	return;
+        // not there, bail out
+        return;
 
     this.docs_being_fetched[hash].providers.splice(pos, 1);
 
     if(pos == 0)
-	this.fetch_top(hash);
+        this.fetch_top(hash);
 }
 
 function heartbeat(hash){
@@ -140,10 +140,10 @@ function heartbeat(hash){
     var now = new Date();
 
     for(hash in this.docs_being_fetched){
-	if(this.docs_being_fetched[hash].contacted < 0)
-	    continue;
-	if(this.timeout > now - this.docs_being_fetched[hash].contacted)
-	    not_found(this.docs_being_fetched[hash].providers[0], hash);
+        if(this.docs_being_fetched[hash].contacted < 0)
+            continue;
+        if(this.timeout > now - this.docs_being_fetched[hash].contacted)
+            not_found(this.docs_being_fetched[hash].providers[0], hash);
     }
 }
 
@@ -152,5 +152,7 @@ DocFetcher.prototype.disconnect = disconnect;
 DocFetcher.prototype.received = received;
 DocFetcher.prototype.new_connection = new_connection;
 DocFetcher.prototype.heartbeat = heartbeat;
+DocFetcher.prototype.unavailable = unavailable;
+DocFetcher.prototype.not_found = not_found;
 
 module.exports = DocFetcher;
