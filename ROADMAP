@@ -16,7 +16,7 @@ Stage 1
 * Basic client
 
   * Handles text/plain, text/html.
-  * Documents are <HTTP-linke header, '\n', binary document>.
+  * Documents are <HTTP-like header, '\n', binary document>.
   * No hash blacklisting.
   * No disk storage.
 

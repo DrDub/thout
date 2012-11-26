@@ -117,9 +117,9 @@ function received(hash, document){
 
 // new connection, add to providers
 function new_connection(connection_id){
-    this.docs_being_fetched.forEach(function(obj){
-        obj.providers.push(connection_id);
-    });
+    for(hash in this.docs_being_fetched){
+        this.docs_being_fetched.providers.push(connection_id);
+    }
 }
 
 // a certain connection notifies it doesn't have a given hash

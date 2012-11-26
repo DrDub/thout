@@ -42,19 +42,21 @@ function new_connection(connection){
     }
 
     this.connections[id] = connection;
-    for(listener in listeners){
+    this.listeners.forEach(function(listener){
         listener.new_connection(id);
-    }
+    });
+    var self = this;
     connection.on('message', function(message) {
-        this.controller.message(id, message.data);
+        console.log(message);
+        self.controller.message(id, message);
     });
         
     connection.on('close', function(connection) {
         // close connection
-        delete this.connections[id];
-        for(listener in listeners){
+        delete self.connections[id];
+        self.listeners.forEach(function(listener){
             listener.disconnect(id);
-        }
+        });
     });
     return id;
 }

@@ -62,15 +62,15 @@ function message(connection_id, message){
             if(json.command === 'FETCH') {
                 if(!('hash' in json))
                     return console.error('FETCH without hash: '+message.utf8Data);
-                docfetcher.fetch(json.hash, connection_id);
+                this.docfetcher.fetch(json.hash, connection_id);
             }else if(json.command === 'REGISTER') {
                 if(!('hash' in json))
                     return console.error('REGISTER without hash: '+message.utf8Data);
-                cache.validate(connection_id, json.hash)
+                this.cache.validate(connection_id, json.hash)
             }else if(json.command === 'AVAILABLE') {
                 if(!('number_of_slots' in json))
                     return console.error('AVAILABLE without number_of_slots: '+message.utf8Data);
-                cache.capacity(connection_id, json.number_of_slots);
+                this.cache.capacity(connection_id, json.number_of_slots);
             }else if(json.command === 'LIST') {
                 if(!('number_of_hashes' in json))
                     return console.error('LIST without number_of_hashes: '+message.utf8Data);
@@ -85,7 +85,7 @@ function message(connection_id, message){
             if(json.response === 'UNAVAILABLE'){
                 if(!('hash' in json))
                     return console.error('UNAVAILABLE without hash: '+message.utf8Data);
-                cache.invalidate(connection_id, hash);
+                this.cache.invalidate(connection_id, hash);
                 docfetcher.not_found(connection_id, hash);
             }else{
                 return console.error('Unknown response ' + json.response);

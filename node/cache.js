@@ -94,7 +94,7 @@ function new_connection(connection_id){
 
 // internal function for signaling a new hash
 function new_hash(hash) {
-    this.hash_to_connection[hash] = {};
+    this.hash_to_connection[hash] = [];
     this.hashes.push(hash);
 }    
 
@@ -215,6 +215,7 @@ Cache.prototype.find_by_hash = find_by_hash;
 Cache.prototype.invalidate = invalidate;
 Cache.prototype.validate = validate;
 Cache.prototype.new_connection = new_connection;
+Cache.prototype.new_hash = new_hash;
 Cache.prototype.capacity = capacity;
 Cache.prototype.list = list;
 Cache.prototype.heartbeat = heartbeat;

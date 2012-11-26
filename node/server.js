@@ -45,8 +45,9 @@ function start(external_ip, conmgr, torchecker) {
     });
 
     wsServer.on('request', function(request) {
+        console.log('Got request.');
         var connection = request.accept(null, request.origin);
-        if(torchecker.check(request))
+        if(torchecker==null || torchecker.check(request))
            conmgr.new_connection(connection);
     });
 
