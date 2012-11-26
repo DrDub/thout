@@ -1,18 +1,29 @@
+/* 
+Copyright (c) 2012 Pablo Duboue
 
-/* Copyright (c) 2012 Pablo Duboue
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
 */
 
-function DocFetcher(max_doc_size){
+function DocFetcher(max_doc_size, fetch_timeout_in_sec){
     this.docs_being_fetched = {};
-    // need to migrate timeout to config file
-    // what is a sane value?
-    this.timeout = undefined;
+    this.timeout = fetch_timeout_in_sec;
     this.max_doc_size = max_doc_size;
     this.cache = undefined;
     this.conmgr = undefined;
@@ -23,51 +34,66 @@ function fetch(hash, awaiting){
 	awaiting = [awaiting];
     }
     if(hash in this.docs_being_fetched){
+	// already being fetched
 	var this_awaiting = this.docs_being_fetched[hash].awaiting;
 	this_awaiting.push.apply(this_awaiting, awaiting);
-    }else{
-	var providers = [];
-	var known = cache.find_by_hash(hash);
-	var all = conmgr.list();
-	providers.push.apply(providers, known);
-	for(idx in all)
-	    if(!(all[idx] in known))
-		providers.push(all[idx]);
-	
-	docs_being_fetched[hash] = 
-	    { providers: providers,
-	      awaiting: awaiting,
-	      contacted: new Date() }
-	process.nextTick(function(){
-	    this.conmgr.send(providers[0], 
-			     JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
-	});
+	return;
     }
+    // create a new entry in docs_being_fetched
+    var providers = [];
+    var known = cache.find_by_hash(hash);
+    var all = conmgr.list();
+    providers.push.apply(providers, known);
+    for(idx in all)
+	if(!(all[idx] in known))
+	    providers.push(all[idx]);
+
+    this.docs_being_fetched[hash] = 
+	{ providers: providers,
+	  awaiting: awaiting };
+    this.fetch_top(hash);
+}
+
+function fetch_top(hash){
+    this.docs_being_fetched[hash].contacted = new Date();
+    process.nextTick(function(){
+	this.conmgr.send(providers[0], 
+			 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
+    });
+}
+
+function unavailable(hash){
+    this.docs_being_fetched[hash].awaiting.forEach(function(other_id){
+	process.nextTick(function(){
+	    this.conmgr.send(other_id,
+			     JSON.stringify({ 'response' : 'UNAVAILABLE', 
+					      'hash' : hash }));
+	});
+    });
+    delete this.docs_being_fetched[hash];
 }
 	
+// disconnected, delete from providers and awaiting, when needed
+// fetch next if needed or broadcast unavailable if last
 function disconnect(connection_id){
-    for(idx in this.docs_being_fetched){
-	var pos = this.docs_being_fetched[idx].providers.indexOf(connection_id);
-	this.docs_being_fetched[idx].providers.splice(pos, 1);
+    for(hash in this.docs_being_fetched){
+	var pos = this.docs_being_fetched[hash].providers.indexOf(connection_id);
+	if(pos>=0)
+	    this.docs_being_fetched[hash].providers.splice(pos, 1);
+	var pos2 = this.docs_being_fetched[hash].awaiting.indexOf(connection_id);
+	if(pos2>=0)
+	    this.docs_being_fetched[hash].awaiting.splice(pos2, 1);
 	if(pos == 0){
-	    if(this.docs_being_fetched[idx].length == 0){
-		this.docs_being_fetched[idx].awaiting.forEach(function(other_id){
-		    process.nextTick(function(){
-			this.conmgr.send(other_id,
-					 JSON.stringify({ 'response' : 'UNAVAILABLE', 
-							  'hash' : hash }));
-		    });
-		});
+	    if(this.docs_being_fetched[hash].length == 0){
+		this.unavailable(hash);
 	    }else{
-		process.nextTick(function(){
-		    this.conmgr.send(this.docs_being_fetched[idx].providers[0], 
-				     JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
-		});
+		fetch_top(hash);
 	    }
 	}
     }
 }
 
+// document received, broadcast to awaiting
 function received(hash, document){
     if(!(hash in this.docs_being_fetched))
 	return console.error("Received '"+ hash + "', not being awaited for.");
@@ -79,6 +105,7 @@ function received(hash, document){
     delete this.docs_being_fetched[hash];
 }
 
+// new connection, add to providers
 function new_connection(connection_id){
     this.docs_being_fetched.forEach(function(obj){
 	obj.providers.push(connection_id);
@@ -145,4 +172,3 @@ DocFetcher.prototype.new_connection = new_connection;
 DocFetcher.prototype.heartbeat = heartbeat;
 
 module.exports = DocFetcher;
-
