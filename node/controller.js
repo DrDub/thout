@@ -29,6 +29,8 @@ crypto.createHash("sha512");
 function Controller(cache, docfetcher){
     this.cache = cache;
     this.docfetcher = docfetcher;
+    setInterval(cache.heartbeat, 500);
+    setInterval(docfetcher.heartbeat, 3000);
 }
 
 function message(connection_id, message){
