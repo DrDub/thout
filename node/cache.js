@@ -157,6 +157,11 @@ function heartbeat() {
     // huge tables of hashes and connections so it just checks a few
     // connections and hashes
 
+    if(this.hashes.length == 0)
+        return;
+    if(this.connections.length == 0)
+        return;
+
     var checked = {};
     var under_represented = [];
     var now = new Date();
@@ -202,6 +207,8 @@ function heartbeat() {
                 }
             }
     }
+
+    //TODO delete hashes with no known connections
 }
 
 Cache.prototype.find_by_hash = find_by_hash;
