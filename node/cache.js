@@ -185,7 +185,7 @@ function heartbeat() {
     // find connections with available slots
     checked = {};
     for(var i=0; i<50; i++){
-        var connection_id = this.[parseInt(Math.random() * this.connections.length)];
+        var connection_id = this.connections[parseInt(Math.random() * this.connections.length)];
         if(connections in checked)
             continue;
         var should_send = false;
@@ -210,6 +210,6 @@ Cache.prototype.validate = validate;
 Cache.prototype.new_connection = new_connection;
 Cache.prototype.capacity = capacity;
 Cache.prototype.list = list;
-Cache.prototype.hearbeat = hearbeat;
+Cache.prototype.heartbeat = heartbeat;
 
 module.exports = Cache;

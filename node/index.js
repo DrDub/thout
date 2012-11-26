@@ -40,14 +40,21 @@ var config = JSON.parse(config_data); // might fail
 console.assert(config.EXTERNAL_IP);
 console.assert(config.MAX_DOC_SIZE);
 console.assert(config.MAX_MEM);
+console.assert(config.REPLICATION_LEVEL);
+console.assert(config.DEFAULT_NUMBER_OF_SLOTS);
+console.assert(config.FETCH_TIMEOUT_IN_SECS);
 
-var cache = new Cache(config.MAX_MEM);
+var cache = new Cache(config.MAX_MEM, config.REPLICATION_LEVEL, config.DEFAULT_NUMBER_OF_SLOTS);
 var docfetcher = new DocFetcher(config.MAX_DOC_SIZE, config.FETCH_TIMEOUT_IN_SECS);
-torchecker.start(config.EXTERNAL_IP);
+if(config.DEBUG === undefined)
+    torchecker.start(config.EXTERNAL_IP);
+else
+    torchecker = null;
+cache.docfetcher = docfetcher;
 var controller = new Controller(cache, docfetcher);
 var conmgr = new ConMgr(controller);
 conmgr.add_listener(cache);
 conmgr.add_listener(docfetcher);
-DocFetcher.conmgr = conmgr;
+docfetcher.conmgr = conmgr;
 
 server.start(config.EXTERNAL_IP, conmgr, torchecker);

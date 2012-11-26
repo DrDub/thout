@@ -37,8 +37,9 @@ function fetch(hash, awaiting){
     }
     if(hash in this.docs_being_fetched){
         // already being fetched
-        var this_awaiting = this.docs_being_fetched[hash].awaiting;
-        this_awaiting.push.apply(this_awaiting, awaiting);
+        for(new_awaiting in awaiting)
+            if(this.docs_being_fetched[hash].awaiting.indexOf(new_awaiting) < 0)
+                this.docs_being_fetched[hash].awaiting.push(new_awaiting);
         return;
     }
     // create a new entry in docs_being_fetched
@@ -135,7 +136,7 @@ function not_found(connection_id, hash){
         this.fetch_top(hash);
 }
 
-function heartbeat(hash){
+function heartbeat(){
     //When a doc has waited long enough for a given connection_id,
     var now = new Date();
 

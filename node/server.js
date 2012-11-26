@@ -29,7 +29,7 @@ function start(external_ip, conmgr, torchecker) {
     var client_files = new(static.Server)('../client');
     var server = http.createServer(function(request, response) {
         request.addListener('end', function () {
-            if(!torchecker.check(request.connection)){
+            if(torchecker != null && !torchecker.check(request.connection)){
                 if(!/\/images\//.test(request.url) &&
                    !/\/favicon.ico/.test(request.url)){
                     request.url='/no_tor.html';
