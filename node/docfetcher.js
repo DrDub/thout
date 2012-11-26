@@ -23,12 +23,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 function DocFetcher(max_doc_size, fetch_timeout_in_sec){
     this.docs_being_fetched = {};
-    this.timeout = fetch_timeout_in_sec;
+    this.timeout = fetch_timeout_in_sec * 1000;
     this.max_doc_size = max_doc_size;
     this.cache = undefined;
     this.conmgr = undefined;
 }
 
+// the connection_ids in 'awaiting' expect a document that hashes to
+// the given hash
 function fetch(hash, awaiting){
     if(!Array.isArray(awaiting)){
 	awaiting = [awaiting];
@@ -54,14 +56,21 @@ function fetch(hash, awaiting){
     this.fetch_top(hash);
 }
 
+// fetch the top document in providers
 function fetch_top(hash){
-    this.docs_being_fetched[hash].contacted = new Date();
+    //if list is empty, send UNAVAILABLE response to every con_id in awaiting
+    if (this.docs_being_fetched[hash].providers.length < 1)
+	return unavailable(hash);
+
+    this.docs_being_fetched[hash].contacted = -1; // being contacted
     process.nextTick(function(){
+	this.docs_being_fetched[hash].contacted = new Date();
 	this.conmgr.send(providers[0], 
 			 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
     });
 }
 
+// tell the connections in awaiting the document is unavailable
 function unavailable(hash){
     this.docs_being_fetched[hash].awaiting.forEach(function(other_id){
 	process.nextTick(function(){
@@ -73,15 +82,15 @@ function unavailable(hash){
     delete this.docs_being_fetched[hash];
 }
 	
-// disconnected, delete from providers and awaiting, when needed
-// fetch next if needed or broadcast unavailable if last
+// a connection have disconnected, delete it from providers and
+// awaiting. If needed fetch from next or unavailable if last
 function disconnect(connection_id){
     for(hash in this.docs_being_fetched){
 	var pos = this.docs_being_fetched[hash].providers.indexOf(connection_id);
-	if(pos>=0)
+	if(pos >= 0)
 	    this.docs_being_fetched[hash].providers.splice(pos, 1);
 	var pos2 = this.docs_being_fetched[hash].awaiting.indexOf(connection_id);
-	if(pos2>=0)
+	if(pos2 >= 0)
 	    this.docs_being_fetched[hash].awaiting.splice(pos2, 1);
 	if(pos == 0){
 	    if(this.docs_being_fetched[hash].length == 0){
@@ -112,56 +121,29 @@ function new_connection(connection_id){
     });
 }
 
+// a certain connection notifies it doesn't have a given hash
 function not_found(connection_id, hash){
     //remove connection_id from docs_being_fetched[hash]
-    var next_connection_id = this.docs_being_fetched[hash].providers[1];
-    if(-1 != this.docs_being_fetched[hash].providers.indexOf(connection_id))
-        var position = this.docs_being_fetched[hash].providers.indexOf(connection_id);
-    else
-    	return -1;
-    this.docs_being_fetched[hash].providers.splice(position, 1);
-    //then move to next one and send fetch command via JSON.stringify
-    this.docs_being_fetched[hash].contacted = new Date();
-    process.nextTick(function(){
-	this.conmgr.send(next_connection_id, 
-			 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
-    }
-    //if list is empty, send UNAVAILABLE response to every con_id in awaiting
-    if (this.docs_being_fetched[hash].providers.length < 1)
-        this.docs_being_fetched[hash].awaiting.forEach(function(con_id){
-	    process.nextTick(function(){
-	        this.conmgr.send(con_id,
-		                 JSON.stringify({ 'response' : 'UNAVAILABLE', 'hash' : hash }));
-            }
-	}
-    //and then remove the hash from docs_being_fetched
-    delete this.docs_being_fetched[hash]
+    var pos = this.docs_being_fetched[hash].providers.indexOf(connection_id);
+    if(pos == -1)
+	// not there, bail out
+	return;
+
+    this.docs_being_fetched[hash].providers.splice(pos, 1);
+
+    if(pos == 0)
+	this.fetch_top(hash);
 }
 
 function heartbeat(hash){
     //When a doc has waited long enough for a given connection_id,
     var now = new Date();
-    if (this.timeout > now - this.docs_being_fetched[hash].contacted){
-        //if provider list is empty send UNAVAILABLE response,
-        if (this.docs_being_fetched[hash].providers.length < 1)
-            this.docs_being_fetched[hash].awaiting.forEach(function(con_id){
-	        process.nextTick(function(){
-	            this.conmgr.send(con_id,
-		                     JSON.stringify({ 'response' : 'UNAVAILABLE', 'hash' : hash }));
-                }
-	}
-        else{
-            //otherwise splice that connection_id,
-            this.docs_being_fetched[hash].providers.splice(0,1);
-            //get the next_connection_id
-            var next_connection_id = this.docs_being_fetched[hash].providers[0];
-            //and initiate a new fetch.
-            this.docs_being_fetched[hash].contacted = new Date();
-            process.nextTick(function(){
-                this.conmgr.send(next_connection_id, 
-		                 JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
-            }
-        }
+
+    for(hash in this.docs_being_fetched){
+	if(this.docs_being_fetched[hash].contacted < 0)
+	    continue;
+	if(this.timeout > now - this.docs_being_fetched[hash].contacted)
+	    not_found(this.docs_being_fetched[hash].providers[0], hash);
     }
 }
 
