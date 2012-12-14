@@ -31,7 +31,8 @@ function start(external_ip, conmgr, torchecker) {
         request.addListener('end', function () {
             if(torchecker != null && !torchecker.check(request.connection)){
                 if(!/\/images\//.test(request.url) &&
-                   !/\/favicon.ico/.test(request.url)){
+                   !/\/favicon.ico/.test(request.url) &&
+                   !/.*css/.test(request.url)){
                     request.url='/no_tor.html';
                 }
             }
