@@ -40,3 +40,13 @@ connection.onopen = function(e) {
     connection.send(JSON.stringify({'command' : 'REGISTER', 'hash':'50fdf9064a8f32689125c6b2691a6c99a83857a9d28a0a076b24cffeac93e7a283b86faa173b09b77cf1813d21420d1d5b6cfaac2287cdd2268dde1e59e64fb2' }));
 }
 
+function setup(){
+    var i=2;
+    var el = document.querySelector("#scr"+i);
+    while (el != null){
+      el.style.visibility = 'hidden';
+      i++;
+      el = document.querySelector("#scr"+i);
+    }
+}
+

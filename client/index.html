@@ -1,17 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
-<title>Welcome to Thout</title>
-<script type="text/javascript" src="lib/thout.js"></script>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" media="all" href="style.css" />
+  <title>Welcome to Thout</title>
+  <script type="text/javascript" src="lib/thout.js"></script>
 </head>
 
-<body>
-<h1>Welcome to Thout</h1>
+<body onload="setup()">
 
-<p> Thout allows you to share and access documents collaboratively
-stored by a community of readers.  </p>
+<div id="scr1" class="screen">
 
-<p> <i>Loading...</i> </p>
+<header><h1>Welcome to Thout</h1></header>
 
-</body> </html>
+  <section><p>Thout allows you to share and access documents
+collaboratively stored by a community of reader/publishers.</p>
+
+    <p> <i>Loading...</i> </p>
+  </section>
+
+</div>
+
+<div id="scr2" class="screen">
+  <header><h1>Thout</h1></header>
+
+  <section><p>Retrieve a thout document. Type its hash value here:</p>
+    <input type="text" size="100" id="inputhash"></input>
+  </section>
+
+  <section><p>Drag a file from your filesystem and drop it below to
+  share it within the thout network:</p>
+
+    <div id="dropzone">Drop the file here.</div>
+
+    <p id="outputhash"></p>
+  </section>
+</section>
+
+
+</body>
+</html>
