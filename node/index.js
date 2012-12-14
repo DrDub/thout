@@ -46,7 +46,7 @@ console.assert(config.FETCH_TIMEOUT_IN_SECS);
 
 var cache = new Cache(config.MAX_MEM, config.REPLICATION_LEVEL, config.DEFAULT_NUMBER_OF_SLOTS);
 var docfetcher = new DocFetcher(config.MAX_DOC_SIZE, config.FETCH_TIMEOUT_IN_SECS);
-if(config.DEBUG === undefined)
+if(config.DEBUG === undefined || !config.DEBUG)
     torchecker.start(config.EXTERNAL_IP);
 else
     torchecker = null;
