@@ -48,5 +48,11 @@ function setup(){
       i++;
       el = document.querySelector("#scr"+i);
     }
+    $.ajax({
+        url: "/status",
+        context: document.body
+    }).done(function(data) { 
+        $('.serverstats').html(JSON.stringify(data));
+    });
 }
 

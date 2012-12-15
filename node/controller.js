@@ -96,5 +96,12 @@ function message(connection_id, message){
     }
 }
 
+function status(){
+    var result = this.cache.info();
+    result.max_document_size = this.docfetcher.max_doc_size;
+    return JSON.stringify(result);
+}
+
 Controller.prototype.message = message;
+Controller.prototype.status = status;
 module.exports = Controller;

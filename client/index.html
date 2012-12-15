@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <link rel="stylesheet" media="all" href="style.css" />
   <title>Welcome to Thout</title>
+  <script type="text/javascript" src="lib/jquery.js"></script>
   <script type="text/javascript" src="lib/thout.js"></script>
 </head>
 
@@ -16,7 +17,13 @@
   <section><p>Thout allows you to share and access documents
 collaboratively stored by a community of reader/publishers.</p>
 
-    <p> <i>Loading...</i> </p>
+   <p>When you connect to the Thout network you will immediately begin
+to store and sharing documents uploaded by other reader/publishers
+such as yourself.</p>
+
+    <p> <button type="button" id="connect" value="connect" onclick="connect()"/>Connect</p>
+
+    <p id="serverstats"></p>
   </section>
 
 </div>
@@ -24,12 +31,12 @@ collaboratively stored by a community of reader/publishers.</p>
 <div id="scr2" class="screen">
   <header><h1>Thout</h1></header>
 
-  <section><p>Retrieve a thout document. Type its hash value here:</p>
+  <section><p>Retrieve a Thout document. Type its hash value here:</p>
     <input type="text" size="100" id="inputhash"></input>
   </section>
 
   <section><p>Drag a file from your filesystem and drop it below to
-  share it within the thout network:</p>
+  share it within the Thout network:</p>
 
     <div id="dropzone">Drop the file here.</div>
 

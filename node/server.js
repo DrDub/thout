@@ -28,17 +28,23 @@ static = require('node-static');
 function start(external_ip, conmgr, torchecker) {
     var client_files = new(static.Server)('../client');
     var server = http.createServer(function(request, response) {
-        request.addListener('end', function () {
-            if(torchecker != null && !torchecker.check(request.connection)){
-                if(!/\/images\//.test(request.url) &&
-                   !/\/favicon.ico/.test(request.url) &&
-                   !/.*css/.test(request.url)){
-                    request.url='/no_tor.html';
+        if(/^\/status$/.test(request.url)){
+            response.writeHead(200, {"Content-Type": "application/json"});
+            response.write(conmgr.controller.status());
+            response.end();
+        }else{
+            request.addListener('end', function () {
+                if(torchecker != null && !torchecker.check(request.connection)){
+                    if(!/\/images\//.test(request.url) &&
+                       !/\/favicon.ico/.test(request.url) &&
+                       !/.*css/.test(request.url)){
+                        request.url='/no_tor.html';
+                    }
                 }
-            }
-            // Serve files
-            client_files.serve(request, response);
-        });
+                // Serve files
+                client_files.serve(request, response);
+            });
+        }
     });
 
     var wsServer = new (websocket.server)({

@@ -63,6 +63,14 @@ site and are outside of this project.
 
 ### Protocol
 
+REST calls from NODE:
+
+* /status returns
+** number_of_clients: number of connected clients
+** number_documents: number of known documents
+** max_document_size: maximum document size accepted by this server
+** replication_level: how many copies of each document the system will try to have
+
 The communication between the CLIENT and NODE:
 
 * From Client: JSON { 'command' : 'FETCH' , 'hash' : hash }

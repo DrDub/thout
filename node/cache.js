@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 function Cache(maxmem /* ignored */, replication_level, default_number_of_slots){
     this.hashes = []; // a list of all hashes
-    this.connections = []; // a list of all hashes
+    this.connections = []; // a list of all connections
 
     this.connection_to_hash = {}; // connection to list of hash
     this.connection_to_hash_time = {}; // connection to object hash -> notified
@@ -211,6 +211,14 @@ function heartbeat() {
     //TODO delete hashes with no known connections
 }
 
+function info() {
+    return {
+        'number_of_clients': this.connections.length,
+        'number_of_documents':  this.hashes.length,
+        'replication_level': this.replication_level,
+    }
+}
+
 Cache.prototype.find_by_hash = find_by_hash;
 Cache.prototype.invalidate = invalidate;
 Cache.prototype.validate = validate;
@@ -219,5 +227,6 @@ Cache.prototype.new_hash = new_hash;
 Cache.prototype.capacity = capacity;
 Cache.prototype.list = list;
 Cache.prototype.heartbeat = heartbeat;
+Cache.prototype.info = info;
 
 module.exports = Cache;
