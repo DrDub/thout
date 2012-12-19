@@ -56,5 +56,6 @@ var conmgr = new ConMgr(controller);
 conmgr.add_listener(cache);
 conmgr.add_listener(docfetcher);
 docfetcher.conmgr = conmgr;
+docfetcher.cache = cache;
 
 server.start(config.EXTERNAL_IP, conmgr, torchecker);

@@ -44,8 +44,8 @@ function fetch(hash, awaiting){
     }
     // create a new entry in docs_being_fetched
     var providers = [];
-    var known = cache.find_by_hash(hash);
-    var all = conmgr.list();
+    var known = this.cache.find_by_hash(hash);
+    var all = this.conmgr.list();
     providers.push.apply(providers, known);
     for(idx in all)
         if(!(all[idx] in known))
@@ -64,18 +64,20 @@ function fetch_top(hash){
         return unavailable(hash);
 
     this.docs_being_fetched[hash].contacted = -1; // being contacted
+    var self = this;
     process.nextTick(function(){
-        this.docs_being_fetched[hash].contacted = new Date();
-        this.conmgr.send(providers[0], 
+        self.docs_being_fetched[hash].contacted = new Date();
+        self.conmgr.send(self.docs_being_fetched[hash].providers[0], 
                          JSON.stringify({ 'command' : 'FETCH', 'hash' : hash }));
     });
 }
 
 // tell the connections in awaiting the document is unavailable
 function unavailable(hash){
+    var self=this;
     this.docs_being_fetched[hash].awaiting.forEach(function(other_id){
         process.nextTick(function(){
-            this.conmgr.send(other_id,
+            self.conmgr.send(other_id,
                              JSON.stringify({ 'response' : 'UNAVAILABLE', 
                                               'hash' : hash }));
         });
@@ -107,9 +109,10 @@ function disconnect(connection_id){
 function received(hash, document){
     if(!(hash in this.docs_being_fetched))
         return console.error("Received '"+ hash + "', not being awaited for.");
+    var self=this;
     this.docs_being_fetched[hash].awaiting.forEach(function(connection_id){
         process.nextTick(function(){
-            this.conmgr.send(connection_id, document);
+            self.conmgr.send(connection_id, document);
         });
     });
     delete this.docs_being_fetched[hash];
@@ -144,11 +147,12 @@ function heartbeat(){
         if(this.docs_being_fetched[hash].contacted < 0)
             continue;
         if(this.timeout > now - this.docs_being_fetched[hash].contacted)
-            not_found(this.docs_being_fetched[hash].providers[0], hash);
+            this.not_found(this.docs_being_fetched[hash].providers[0], hash);
     }
 }
 
 DocFetcher.prototype.fetch = fetch;
+DocFetcher.prototype.fetch_top = fetch_top;
 DocFetcher.prototype.disconnect = disconnect;
 DocFetcher.prototype.received = received;
 DocFetcher.prototype.new_connection = new_connection;

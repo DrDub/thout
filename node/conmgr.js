@@ -75,7 +75,7 @@ function send(connection_id, message){
 function list(){
     var results=[];
     for(id in this.connections)
-        results.append(id);
+        results.push(id);
     return results;
 }
 
