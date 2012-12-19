@@ -53,7 +53,7 @@ function connect(){
     };
 
     ws_connection.onmessage = function (e) {
-        console.log('Server: ' + e.data);
+        alert('Server: ' + e.data);
     };
 
     // document is:
@@ -63,7 +63,18 @@ function connect(){
       hello thout!
     */
     ws_connection.onopen = function(e) {
-        ws_connection.send(JSON.stringify({'command' : 'REGISTER', 'hash':'50fdf9064a8f32689125c6b2691a6c99a83857a9d28a0a076b24cffeac93e7a283b86faa173b09b77cf1813d21420d1d5b6cfaac2287cdd2268dde1e59e64fb2' }));
+//        ws_connection.send(JSON.stringify({'command' : 'REGISTER', 'hash':'33f18381ee266926e1539f2412a0771a72b09d0b039d931348acaeefc682d2e9' }));
     }
 }
+
+var doc="Content-Type: text/plain\n\nhello thout!\n";
+
+function tmpsend(){
+    var hash = CryptoJS.SHA256(doc);
+    
+    document.querySelector('#outputhash').innerHTML = hash;
+
+    ws_connection.send(JSON.stringify({'command' : 'REGISTER', 'hash': hash.toString() }));
+}
+
 

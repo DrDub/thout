@@ -5,6 +5,7 @@
   <link rel="stylesheet" media="all" href="style.css" />
   <title>Welcome to Thout</title>
   <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/sha256.js"></script>
   <script type="text/javascript" src="lib/thout.js"></script>
 </head>
 
@@ -39,6 +40,8 @@ such as yourself.</p>
   share it within the Thout network:</p>
 
     <div id="dropzone">Drop the file here.</div>
+
+    <p><button type="button" id="tmpsend" value="send" onclick="tmpsend()">Send</button></b>
 
     <p id="outputhash"></p>
   </section>
