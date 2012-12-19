@@ -21,24 +21,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
 */
 
-var connection = new WebSocket('ws://localhost:8080/', ['thout']);
-
-connection.onerror = function (error) {
-    console.log('WebSocket Error ' + error);
-};
-
-connection.onmessage = function (e) {
-    console.log('Server: ' + e.data);
-};
-
-/*
-Content-Type: text/plain
-
-hello thout!
-*/
-connection.onopen = function(e) {
-    connection.send(JSON.stringify({'command' : 'REGISTER', 'hash':'50fdf9064a8f32689125c6b2691a6c99a83857a9d28a0a076b24cffeac93e7a283b86faa173b09b77cf1813d21420d1d5b6cfaac2287cdd2268dde1e59e64fb2' }));
-}
+var ws_connection = null;
 
 function setup(){
     var i=2;
@@ -51,8 +34,36 @@ function setup(){
     $.ajax({
         url: "/status",
         context: document.body
-    }).done(function(data) { 
-        $('.serverstats').html(JSON.stringify(data));
+    }).done(function(data) {
+        document.querySelector('#serverstats').innerHTML = JSON.stringify(data);
     });
+}
+
+function connect(){
+    if(ws_connection !== null)
+        return;
+
+    document.querySelector("#scr1").style.visibility = 'hidden';
+    document.querySelector("#scr2").style.visibility = 'visible';
+
+    ws_connection = new WebSocket('ws://localhost:8080/', ['thout']);
+
+    ws_connection.onerror = function (error) {
+        console.log('WebSocket Error ' + error);
+    };
+
+    ws_connection.onmessage = function (e) {
+        console.log('Server: ' + e.data);
+    };
+
+    // document is:
+    /*
+      Content-Type: text/plain
+      
+      hello thout!
+    */
+    ws_connection.onopen = function(e) {
+        ws_connection.send(JSON.stringify({'command' : 'REGISTER', 'hash':'50fdf9064a8f32689125c6b2691a6c99a83857a9d28a0a076b24cffeac93e7a283b86faa173b09b77cf1813d21420d1d5b6cfaac2287cdd2268dde1e59e64fb2' }));
+    }
 }
 

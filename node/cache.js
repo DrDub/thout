@@ -45,15 +45,20 @@ function find_by_hash(hash){
     return this.hash_to_connection[hash];    
 }
 
+// to use as a listener
+function disconnect(connection_id) {
+    this.invalidate(connection_id);
+}
+
 // invalidate a connection_id (or just a hash for a given
 // connection_id)
 function invalidate(connection_id, hash) {
     if(!(connection_id in this.connection_to_hash))
         return; // shouldn't happen, bail out
-    if(!(hash in this.hash_to_connection))
-        return; // shouldn't happen, bail out
-
     if(hash !== undefined){
+        if(!(hash in this.hash_to_connection))
+            return; // shouldn't happen, bail out
+
         var pos;
         pos = this.connection_to_hash[connection_id].indexOf(hash);
         if(pos > 0)
@@ -71,13 +76,24 @@ function invalidate(connection_id, hash) {
     // drop all for a given connection_id
     delete this.connection_to_hash[connection_id];
     delete this.connection_to_hash_time[connection_id];
+    var hashes_to_obliterate = [];
     for(hash in this.hash_to_connection){
         var pos = this.hash_to_connection[hash].indexOf(connection_id);
-        if(pos > 0)
-            this.hash_to_connection[hash].split(pos,1);
+        if(pos >= 0)
+            this.hash_to_connection[hash].splice(pos,1);
+        if(this.hash_to_connection[hash].length == 0){
+            // this hash is no more
+            hashes_to_obliterate.push(hash);
+            pos = this.hashes.indexOf(hash);
+            if(pos >= 0)
+                this.hashes.splice(pos,1);
+        }
     }
+    for(idx in hashes_to_obliterate)
+        delete this.hash_to_connection[hashes_to_obliterate[idx]];
+
     var pos = this.connections.indexOf(connection_id);
-    if(pos > 0)
+    if(pos >= 0)
         this.connections.splice(pos,1);
 }
 
@@ -85,6 +101,7 @@ function invalidate(connection_id, hash) {
 function new_connection(connection_id){
     this.connection_to_hash[connection_id] = [];
     this.connection_to_hash_time[connection_id] = {};
+    this.connections.push(connection_id);
     this.connection_meta[connection_id] = { 
         'number_of_slots' : this.DEFAULT_NUMBER_OF_SLOTS,
         'last_validated' : new Date(),
@@ -191,7 +208,7 @@ function heartbeat() {
     checked = {};
     for(var i=0; i<50; i++){
         var connection_id = this.connections[parseInt(Math.random() * this.connections.length)];
-        if(connections in checked)
+        if(this.connections[i] in checked)
             continue;
         var should_send = false;
         if(this.connection_to_hash[connection_id].length <  this.connection_meta[connection_id].number_of_slots)
@@ -200,7 +217,7 @@ function heartbeat() {
             should_send = true;
         if(should_send)
             for(var j=0; j<under_represented.length; j++){
-                if(this.connection_to_hash_time[connection_id][under_presented] === undefined){
+                if(this.connection_to_hash_time[connection_id][under_represented] === undefined){
                     this.docfetcher.fetch(hash, connection_id);
                     under_represented.splice(j,1);
                     break;
@@ -221,6 +238,7 @@ function info() {
 
 Cache.prototype.find_by_hash = find_by_hash;
 Cache.prototype.invalidate = invalidate;
+Cache.prototype.disconnect = disconnect;
 Cache.prototype.validate = validate;
 Cache.prototype.new_connection = new_connection;
 Cache.prototype.new_hash = new_hash;
