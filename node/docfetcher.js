@@ -61,7 +61,7 @@ function fetch(hash, awaiting){
 function fetch_top(hash){
     //if list is empty, send UNAVAILABLE response to every con_id in awaiting
     if (this.docs_being_fetched[hash].providers.length < 1)
-        return unavailable(hash);
+        return this.unavailable(hash);
 
     this.docs_being_fetched[hash].contacted = -1; // being contacted
     var self = this;
@@ -99,7 +99,7 @@ function disconnect(connection_id){
             if(this.docs_being_fetched[hash].length == 0){
                 this.unavailable(hash);
             }else{
-                fetch_top(hash);
+                this.fetch_top(hash);
             }
         }
     }
@@ -121,7 +121,7 @@ function received(hash, document){
 // new connection, add to providers
 function new_connection(connection_id){
     for(hash in this.docs_being_fetched){
-        this.docs_being_fetched.providers.push(connection_id);
+        this.docs_being_fetched[hash].providers.push(connection_id);
     }
 }
 

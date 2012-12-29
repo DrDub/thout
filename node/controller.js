@@ -38,15 +38,17 @@ function Controller(cache, docfetcher){
 }
 
 function message(connection_id, message){
+    var self=this;
     if(message.type === "binary"){
         // document, compute SHA512
         process.nextTick(function(){
             sha512 = crypto.createHash("sha512");
             sha512.update(message.binaryData);
             hash = sha512.digest("hex");
-            cache.validate(connection_id, hash);
+            console.log("Hash: "+hash);
+            self.cache.validate(connection_id, hash);
             process.nextTick(function(){
-                docfetcher.received(hash, document);
+                self.docfetcher.received(hash, message.binaryData);
             });
         });
     }else if(message.type === "utf8"){
@@ -76,7 +78,7 @@ function message(connection_id, message){
                     return console.error('LIST without number_of_hashes: '+message.utf8Data);
                 var message = JSON.stringify({ 'response' : 'LIST', 'hashes': cache.list(json.number_of_hashes) });
                 process.nextTick(function(){
-                    conmgr.send(connection_id, message);
+                    self.conmgr.send(connection_id, message);
                 });
             }else{
                 return console.error('Unknown command ' + json.command);
@@ -86,7 +88,7 @@ function message(connection_id, message){
                 if(!('hash' in json))
                     return console.error('UNAVAILABLE without hash: '+message.utf8Data);
                 this.cache.invalidate(connection_id, hash);
-                docfetcher.not_found(connection_id, hash);
+                this.docfetcher.not_found(connection_id, hash);
             }else{
                 return console.error('Unknown response ' + json.response);
             }
