@@ -40,10 +40,10 @@ function Controller(cache, docfetcher){
 function message(connection_id, message){
     var self=this;
     if(message.type === "binary"){
-        // document, compute SHA512
+        // document, compute SHA256
         process.nextTick(function(){
-            sha512 = crypto.createHash("sha512");
-            sha512.update(message.binaryData);
+            sha512 = crypto.createHash("sha256");
+            sha512.update(message.binaryData.toString('utf8'));
             hash = sha512.digest("hex");
             console.log("Hash: "+hash);
             self.cache.validate(connection_id, hash);

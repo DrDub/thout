@@ -64,7 +64,10 @@ function connect(){
     };
 
     ws_connection.onmessage = function (message) {
-        if(message.type === "binary"){
+        console.log(message);
+        console.log(message.type);
+        console.log(message.data);
+        if(message.type === "binary" || message.type === "message"){
             // document, hash it and store it
             var pos=0;
             if(cache_count === 10)
@@ -77,7 +80,7 @@ function connect(){
                 }
             if(cache_hashes[pos] != null)
                 delete cache_index[cache_hashes[pos]];
-            var hash = CryptoJS.SHA256(message.binaryData).toString();
+            var hash = CryptoJS.SHA256(message.type === "binary"?message.binaryData:message.data.toString("utf8")).toString();
             cache_hashes[pos] = hash;
             cache_docs[pos] = message.binaryData;
             cache_index[hash] = pos;

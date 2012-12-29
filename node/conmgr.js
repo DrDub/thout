@@ -47,6 +47,7 @@ function new_connection(connection){
     });
     var self = this;
     connection.on('message', function(message) {
+        console.log("Received from connection " + id);
         console.log(message);
         self.controller.message(id, message);
     });
