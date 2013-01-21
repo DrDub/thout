@@ -42,9 +42,9 @@ function message(connection_id, message){
     if(message.type === "binary"){
         // document, compute SHA256
         process.nextTick(function(){
-            sha512 = crypto.createHash("sha256");
-            sha512.update(message.binaryData.toString('utf8'));
-            hash = sha512.digest("hex");
+            sha256 = crypto.createHash("sha256");
+            sha256.update(message.binaryData.toString('utf8'));
+            hash = sha256.digest("hex");
             console.log("Hash: "+hash);
             self.cache.validate(connection_id, hash);
             process.nextTick(function(){

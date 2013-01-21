@@ -61,15 +61,15 @@ function invalidate(connection_id, hash) {
 
         var pos;
         pos = this.connection_to_hash[connection_id].indexOf(hash);
-        if(pos > 0)
+        if(pos >= 0)
             this.connection_to_hash[connection_id].splice(pos,1);
         delete this.connection_to_hash_time[connection_id][hash];
         this.connection_meta[connection_id].number_of_hashes--;
         pos = this.hash_to_connection[hash].indexOf(connection_id);
-        if(pos > 0)
+        if(pos >= 0)
             this.hash_to_connection[hash].splice(pos,1);
         pos = this.connections.indexOf(connection_id);
-        if(pos > 0)
+        if(pos >= 0)
             this.connections.splice(pos,1);
         return;
     }
@@ -125,7 +125,7 @@ function validate(connection_id, hash) {
 
     var pos;
     pos = this.connection_to_hash[connection_id].indexOf(hash);
-    if(pos > 0)
+    if(pos >= 0)
         this.connection_to_hash[connection_id].splice(pos,1);
     else
         this.connection_meta[connection_id].number_of_hashes++;
@@ -136,8 +136,8 @@ function validate(connection_id, hash) {
 
     // move connection_id to head
     pos = this.hash_to_connection[hash].indexOf(connection_id);
-    if(pos > 0)
-        this.hash_to_connection[hash].split(pos,1);
+    if(pos >= 0)
+        this.hash_to_connection[hash].splice(pos,1);
     this.hash_to_connection[hash].splice(0,0,connection_id);
 }
 
@@ -203,6 +203,7 @@ function heartbeat() {
                 under_represented.push(hash);
         }
     }
+    console.log("Underpresented: " + under_represented);
 
     // find connections with available slots
     checked = {};
@@ -218,6 +219,7 @@ function heartbeat() {
         if(should_send)
             for(var j=0; j<under_represented.length; j++){
                 if(this.connection_to_hash_time[connection_id][under_represented] === undefined){
+                    console.log("Sending " + hash + " to " + connection_id);
                     this.docfetcher.fetch(hash, connection_id);
                     under_represented.splice(j,1);
                     break;

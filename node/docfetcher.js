@@ -40,21 +40,22 @@ function fetch(hash, awaiting){
         for(new_awaiting in awaiting)
             if(this.docs_being_fetched[hash].awaiting.indexOf(new_awaiting) < 0)
                 this.docs_being_fetched[hash].awaiting.push(new_awaiting);
-        return;
-    }
-    // create a new entry in docs_being_fetched
-    var providers = [];
-    var known = this.cache.find_by_hash(hash);
-    var all = this.conmgr.list();
-    providers.push.apply(providers, known);
-    for(idx in all)
-        if(!(all[idx] in known))
-            providers.push(all[idx]);
+    } else {
+        // create a new entry in docs_being_fetched
+        var providers = [];
+        var known = this.cache.find_by_hash(hash);
+        console.log("For hash '"+hash+"' known: "+known);
+        var all = this.conmgr.list();
+        providers.push.apply(providers, known);
+        for(idx in all)
+            if(!(all[idx] in known))
+                providers.push(all[idx]);
 
-    this.docs_being_fetched[hash] = 
-        { providers: providers,
-          awaiting: awaiting };
-    this.fetch_top(hash);
+        this.docs_being_fetched[hash] = 
+            { providers: providers,
+              awaiting: awaiting };
+        this.fetch_top(hash);
+    }
 }
 
 // fetch the top document in providers

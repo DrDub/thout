@@ -64,10 +64,11 @@ function connect(){
     };
 
     ws_connection.onmessage = function (message) {
+        console.log('Message received:');
         console.log(message);
         console.log(message.type);
         console.log(message.data);
-        if(message.type === "binary" || message.type === "message"){
+        if(message.type === "binary" || message.data.constructor === Blob){
             // document, hash it and store it
             var pos=0;
             if(cache_count === 10)
@@ -80,21 +81,38 @@ function connect(){
                 }
             if(cache_hashes[pos] != null)
                 delete cache_index[cache_hashes[pos]];
-            var hash = CryptoJS.SHA256(message.type === "binary"?message.binaryData:message.data.toString("utf8")).toString();
-            cache_hashes[pos] = hash;
-            cache_docs[pos] = message.binaryData;
-            cache_index[hash] = pos;
-            setTimeout(function(){
-                ws_connection.send(JSON.stringify({'command' : 'REGISTER', 'hash': hash }));
-            }, 0);
+            else
+                cache_count++;
+
+            var binaryData = message.type === "binary" ? message.binaryData : message.data;
+            var f = new FileReader();
+            f.onload = function(e) {
+                var doc = e.target.result;
+
+                console.log(binaryData);
+                console.log("Doc = " + doc);
+
+                var hash = CryptoJS.SHA256(doc).toString();
+                cache_hashes[pos] = hash;
+                cache_docs[pos] = binaryData;
+                cache_index[hash] = pos;
+                console.log("Received document hash "+hash);
+                setTimeout(function(){
+                    ws_connection.send(JSON.stringify({'command' : 'REGISTER', 'hash': hash }));
+                }, 0);
+            };
+            f.readAsText(binaryData);
+        
         }else{
             var json = JSON.parse(message.data);
             if(json.command === 'FETCH'){
                 if(json.hash in cache_index){
+                    console.log("Sending hash "+json.hash);
                     setTimeout(function(){
                         ws_connection.send(cache_docs[cache_index[json.hash]].buffer);
                     }, 0);
                 }else{
+                    console.log("Hash "+json.hash +" not found");
                     setTimeout(function(){
                         ws_connection.send(JSON.stringify({'response' : 'UNAVAILABLE', 'hash': hash }));
                     }, 0);
