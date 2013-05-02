@@ -4,7 +4,7 @@ thout
 Distributed Document Storage using Web Browser cache for
 leaks-oriented sites.
 
-A leaks site that only exists within every reader's Web broswer.
+A leaks site that only exists within every reader's Web browser.
 
 
 Advantages
